@@ -23,6 +23,7 @@ def main():
     corners = pattern_found[1] if pattern_found[0] else []
 
     # Get specific corner points
+    # TODO: Change indexes to get the adjacent cell and not 2 step away so 4cm is a square size and not 2 squares sizes
     indexes = [45, 27, 47, 29] # Corresponding to the four desired points of the chessboard
     dst_points = np.array([[corners[i][0][0], corners[i][0][1]] for i in indexes], dtype="float32")
 
