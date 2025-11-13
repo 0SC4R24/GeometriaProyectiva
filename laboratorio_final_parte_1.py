@@ -31,6 +31,8 @@ def main():
     homography = get_homography(src_points, dst_points)
     print(homography)
 
+    # TODO: Reorder the points so (0,0) is down left, (0,40) is down right, (40,0) is up left and (40,40) is up right
+    # Define colors for the corners
     colors = [(0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 255, 255)] # Red, Green, Blue, Yellow
     # Transform and plot points of a 40x40 mm square grid
     for x in range(0, tile_size + 1, tile_size):
