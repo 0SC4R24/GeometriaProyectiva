@@ -5,6 +5,21 @@ def get_homography(src_points, dst_points):
     """Calculate homography matrix."""
     return cv2.findHomography(src_points, dst_points, cv2.RANSAC, 5.0)[0]
 
+def transform_3d_point_to_pixel(point_3d, homography):
+    """Transform a 3D point to pixel coordinates using the homography matrix."""
+    point = np.array([[point_3d[0]], [point_3d[1]], [1]])
+    transformed_point = homography @ point
+    transformed_point /= transformed_point[2]
+    x_i, y_i = transformed_point[:2, 0].astype(int)
+    return int(x_i), int(y_i)
+
+def draw_square_on_frame(frame, square_points, color=(0, 255, 0)):
+    """Draw a square on the frame given its corner points."""
+    cv2.line(frame, square_points[0], square_points[1], color, 3)
+    cv2.line(frame, square_points[0], square_points[2], color, 3)
+    cv2.line(frame, square_points[1], square_points[3], color, 3)
+    cv2.line(frame, square_points[2], square_points[3], color, 3)
+
 def main():
     # Get the K matrix from the camera
     k_matrix = np.loadtxt("resources/datos/K.txt")
@@ -14,7 +29,7 @@ def main():
 
     # Create parameters for chessboard detection
     pattern_size = (9, 6) # Number of inner corners per chessboard column and row
-    tile_size = 40 # Size of a single tile in mm
+    tile_size = 4 # Size of a single tile in cm
 
     # Find chessboard corners
     pattern_found = cv2.findChessboardCorners(frame_1, pattern_size)
@@ -23,47 +38,38 @@ def main():
     corners = pattern_found[1] if pattern_found[0] else []
 
     # Get specific corner points
-    # TODO: Change indexes to get the adjacent cell and not 2 step away so 4cm is a square size and not 2 squares sizes
-    indexes = [45, 27, 47, 29] # Corresponding to the four desired points of the chessboard
+    indexes = [pattern_size[0] * (pattern_size[1] - 1), pattern_size[0] * (pattern_size[1] - 2), pattern_size[0] * (pattern_size[1] - 1) + 1, pattern_size[0] * (pattern_size[1] - 2) + 1] # Corresponding to the four desired points of the chessboard
     dst_points = np.array([[corners[i][0][0], corners[i][0][1]] for i in indexes], dtype="float32")
 
     # Compute the homography
-    src_points = np.array([[0, 0], [0, tile_size], [tile_size, 0], [tile_size, tile_size]], dtype="float32") # Corner points of a 40x40 mm square in chessboard space (source points for homography)
+    src_points = np.array([[0, 0], [0, tile_size], [tile_size, 0], [tile_size, tile_size]], dtype="float32") # Corner points of a 4x4 cm square in chessboard space (source points for homography)
     homography = get_homography(src_points, dst_points)
     # print(homography)
 
     # Define colors for the corners
-    colors = [(0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 255, 255)] # Red, Green, Blue, Yellow
+    # colors = [(0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 255, 255)] # Red, Green, Blue, Yellow
 
     # Define the points of the chessboard plane
-    points = [(0, 0), (0, 40), (40, 0), (40, 40)]
+    points = [(0, 0), (0, tile_size * 2), (tile_size * 2, 0), (tile_size * 2, tile_size * 2)]
 
     # Define the points in the pixel space plane
-    pixel_points = []
+    pixel_points = [transform_3d_point_to_pixel((x, y), homography) for x, y in points]
 
-    # Transform and plot points of a 40x40 mm square grid
-    for x, y in points:
-        # Transform the point using the homography
-        point = np.array([[x], [y], [1]])
-        transformed_point = homography @ point
-        transformed_point /= transformed_point[2]
-
-        # Draw the point on the frame
-        x_i, y_i = transformed_point[:2, 0].astype(int)
-        # Add the pixel point to the pixel array
-        pixel_points.append([int(x_i), int(y_i)])
-        # cv2.circle(frame_1, (int(x_i), int(y_i)), 5, colors[(y // tile_size) + (2 if x == tile_size else 0)], -1)
-
+    # Draw the axes on the frame
     cv2.line(frame_1, pixel_points[0], pixel_points[1], (0, 255, 0), 3)
     cv2.line(frame_1, pixel_points[0], pixel_points[2], (0, 0, 255), 3)
 
-    # Transform point (80, 80) of the chessboard plane into pixel coordinate using the homography
-    # point = np.array([[80], [80], [1]])
-    # new_transformed_point = homography @ point
-    # new_transformed_point /= new_transformed_point[2]
-    # print(f"Transformed point ({x},{y}):", new_transformed_point[:2].flatten())
-    # x_i, y_i = new_transformed_point[:2, 0].astype(int)
-    # cv2.circle(frame_1, (int(x_i), int(y_i)), 20, (125, 125, 125), -1)
+    # Set square points in chessboard space
+    square_1_points = np.array([(8, 8), (8, 16), (16, 8), (16, 16)], dtype="float32")
+    square_2_points = np.array([(18, 10), (18, 18), (26, 10), (26, 18)], dtype="float32")
+
+    # Transform square points to pixel coordinates
+    square_1_pixel_points = [transform_3d_point_to_pixel((x, y), homography) for x, y in square_1_points]
+    square_2_pixel_points = [transform_3d_point_to_pixel((x, y), homography) for x, y in square_2_points]
+
+    # Draw squares on the frame
+    draw_square_on_frame(frame_1, square_1_pixel_points, (0, 180, 0))
+    draw_square_on_frame(frame_1, square_2_pixel_points, (0, 180, 0))
 
     # Show the first frame
     cv2.imshow("frame_1", frame_1)
