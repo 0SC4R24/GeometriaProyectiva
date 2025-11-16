@@ -1,9 +1,52 @@
 ﻿import cv2
 import numpy as np
 
+def singular_value_decomposition(A):
+    """Perform Singular Value Decomposition on matrix A."""
+    U, S, Vt = np.linalg.svd(A)
+
+    # U = np.zeros((A.shape[0], A.shape[0]))
+    # S = np.zeros((A.shape[0], A.shape[1]))
+    # Vt = np.zeros((A.shape[1], A.shape[1]))
+    #
+    # AtA = A.T @ A
+    # eigenvalues, eigenvectors = np.linalg.eig(AtA)
+    # idx = eigenvalues.argsort()[::-1]
+    # eigenvalues = eigenvalues[idx]
+    # eigenvectors = eigenvectors[:, idx]
+    #
+    # for i in range(len(eigenvalues)):
+    #     S[i, i] = np.sqrt(eigenvalues[i])
+    #
+    # Vt = eigenvectors.T
+    #
+    # for i in range(len(eigenvalues)):
+    #     if S[i, i] > 1e-10:
+    #         U[:, i] = (A @ Vt[i, :]) / S[i, i]
+
+    return U, S, Vt
+
 def get_homography(src_points, dst_points):
     """Calculate homography matrix."""
-    return cv2.findHomography(src_points, dst_points, cv2.RANSAC, 5.0)[0]
+    if len(src_points) < 4 or len(dst_points) < 4:
+        raise ValueError("At least 4 correspondences are required to compute homography.")
+
+    A = []
+    for i in range(len(src_points)):
+        u_a, v_a = src_points[i][0], src_points[i][1]
+        u_b, v_b = dst_points[i][0], dst_points[i][1]
+        A.append([u_a, v_a, 1, 0, 0, 0, -u_a * u_b, -v_a * u_b, -u_b])
+        A.append([0, 0, 0, u_a, v_a, 1, -u_a * v_b, -v_a * v_b, -v_b])
+    A = np.array(A)
+
+    U, S, Vt = singular_value_decomposition(A)
+    H = Vt[-1].reshape(3, 3)
+    H /= H[2, 2]
+
+    # Optional: Validate with OpenCV's findHomography
+    # H_cv2 = cv2.findHomography(src_points, dst_points, cv2.RANSAC, 5.0)[0]
+
+    return H
 
 def transform_3d_point_to_pixel(point_3d, homography):
     """Transform a 3D point to pixel coordinates using the homography matrix."""
@@ -21,6 +64,7 @@ def draw_square_on_frame(frame, square_points, color=(0, 255, 0)):
     cv2.line(frame, square_points[2], square_points[3], color, 3)
 
 def process_frame(frame, frame_number = 1, debug = False):
+    """Process a single frame to detect chessboard and draw axes and squares."""
     # Create parameters for chessboard detection
     pattern_size = (9, 6) # Number of inner corners per chessboard column and row
     tile_size = 4 # Size of a single tile in cm
@@ -78,8 +122,8 @@ def process_frame(frame, frame_number = 1, debug = False):
 
 def main():
     DEBUG_FRAME = False
-    GET_ONE_FRAME = False
-    FRAME_INDEX = 1
+    GET_ONE_FRAME = True
+    FRAME_INDEX = 157
 
     if GET_ONE_FRAME:
         frame = cv2.imread(f"resources/datos/imagenes/img_{FRAME_INDEX:03d}.jpg")
@@ -89,10 +133,10 @@ def main():
         cv2.waitKey(0)
         cv2.destroyAllWindows()
     else:
-        frames = [(cv2.imread(f"resources/datos/imagenes/img_{i:03d}.jpg"), i) for i in range(1, 736)]
-        processed_frames = [process_frame(*frame, DEBUG_FRAME) for frame in frames]
+        frames = [cv2.imread(f"resources/datos/imagenes/img_{i:03d}.jpg") for i in range(1, 736)]
+        processed_frames = [process_frame(frame, index + 1, DEBUG_FRAME) for index, frame in enumerate(frames)]
 
-        out_mp4 = cv2.VideoWriter("chessboard_video.mp4", cv2.VideoWriter_fourcc(*"mp4v"), 30, frames[0][0].shape[1::-1])
+        out_mp4 = cv2.VideoWriter("chessboard_video.mp4", cv2.VideoWriter_fourcc(*"mp4v"), 30, frames[0].shape[1::-1])
         for frame in processed_frames:
             out_mp4.write(frame)
         out_mp4.release()
