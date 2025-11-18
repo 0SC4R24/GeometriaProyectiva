@@ -3,31 +3,12 @@ import numpy as np
 
 def singular_value_decomposition(A):
     """Perform Singular Value Decomposition on matrix A."""
-    U, S, Vt = np.linalg.svd(A)
 
-    # U = np.zeros((A.shape[0], A.shape[0]))
-    # S = np.zeros((A.shape[0], A.shape[1]))
-    # Vt = np.zeros((A.shape[1], A.shape[1]))
-    #
-    # AtA = A.T @ A
-    # eigenvalues, eigenvectors = np.linalg.eig(AtA)
-    # idx = eigenvalues.argsort()[::-1]
-    # eigenvalues = eigenvalues[idx]
-    # eigenvectors = eigenvectors[:, idx]
-    #
-    # for i in range(len(eigenvalues)):
-    #     S[i, i] = np.sqrt(eigenvalues[i])
-    #
-    # Vt = eigenvectors.T
-    #
-    # for i in range(len(eigenvalues)):
-    #     if S[i, i] > 1e-10:
-    #         U[:, i] = (A @ Vt[i, :]) / S[i, i]
-
-    return U, S, Vt
+    return np.linalg.svd(A)
 
 def get_homography(src_points, dst_points):
     """Calculate homography matrix."""
+
     if len(src_points) < 4 or len(dst_points) < 4:
         raise ValueError("At least 4 correspondences are required to compute homography.")
 
@@ -40,16 +21,22 @@ def get_homography(src_points, dst_points):
     A = np.array(A)
 
     U, S, Vt = singular_value_decomposition(A)
+
+    # If S is diagonal with positive values in descending order, the last column of V is equal to h
+    if not np.isclose(S, np.diag(np.sort(np.abs(S))[::-1])).any():
+        raise ValueError("Singular values are not in the expected format.")
+
+    # Reshape h to get the homography matrix H
     H = Vt[-1].reshape(3, 3)
     H /= H[2, 2]
 
-    # Optional: Validate with OpenCV's findHomography
-    # H_cv2 = cv2.findHomography(src_points, dst_points, cv2.RANSAC, 5.0)[0]
+    # H = cv2.findHomography(src_points, dst_points, cv2.RANSAC, 5.0)[0]
 
     return H
 
 def transform_3d_point_to_pixel(point_3d, homography):
     """Transform a 3D point to pixel coordinates using the homography matrix."""
+
     point = np.array([[point_3d[0]], [point_3d[1]], [1]])
     transformed_point = homography @ point
     transformed_point /= transformed_point[2]
@@ -58,16 +45,21 @@ def transform_3d_point_to_pixel(point_3d, homography):
 
 def draw_square_on_frame(frame, square_points, color=(0, 255, 0)):
     """Draw a square on the frame given its corner points."""
+
     cv2.line(frame, square_points[0], square_points[1], color, 3)
     cv2.line(frame, square_points[0], square_points[2], color, 3)
     cv2.line(frame, square_points[1], square_points[3], color, 3)
     cv2.line(frame, square_points[2], square_points[3], color, 3)
 
-def process_frame(frame, frame_number = 1, debug = False):
-    """Process a single frame to detect chessboard and draw axes and squares."""
-    # Create parameters for chessboard detection
-    pattern_size = (9, 6) # Number of inner corners per chessboard column and row
-    tile_size = 4 # Size of a single tile in cm
+def get_extrinsic_parameters(K, H):
+    """Calculate extrinsic parameters (rotation and translation) from intrinsic matrix K and homography H."""
+
+    # TODO: Check why cv2.decomposeHomographyMat returns more than 2 values
+    R, t = cv2.decomposeHomographyMat(H, K)[1:3]
+    return R, t
+
+def get_src_and_dst_points(frame, frame_number = 1, debug = False, pattern_size = (9, 6), tile_size = 4):
+    """Get source and destination points for homography calculation."""
 
     # Find chessboard corners
     pattern_found = cv2.findChessboardCorners(frame, pattern_size)
@@ -92,9 +84,21 @@ def process_frame(frame, frame_number = 1, debug = False):
     # Get corresponding source points of destination points in chessboard space
     src_points = np.array([(x, y) for y in range((pattern_size[1] - 1) * tile_size, -1, -tile_size) for x in range(0, pattern_size[0] * tile_size, tile_size)], dtype="float32")
 
+    # Return source and destination points
+    return src_points, dst_points
+
+def process_frame(frame, frame_number = 1, debug = False):
+    """Process a single frame to detect chessboard and draw axes and squares."""
+
+    # Create parameters for chessboard detection
+    pattern_size = (9, 6) # Number of inner corners per chessboard column and row
+    tile_size = 4 # Size of a single tile in cm
+
+    # Get source and destination points
+    src_points, dst_points = get_src_and_dst_points(frame, frame_number, debug, pattern_size, tile_size)
+
     # Compute the homography
     homography = get_homography(src_points, dst_points)
-    # print(homography)
 
     # Define the points of the chessboard plane axes
     points = [(0, 0), (0, tile_size * 2), (tile_size * 2, 0)]
@@ -118,20 +122,50 @@ def process_frame(frame, frame_number = 1, debug = False):
     draw_square_on_frame(frame, square_1_pixel_points, (0, 180, 0))
     draw_square_on_frame(frame, square_2_pixel_points, (0, 180, 0))
 
+    # Return the processed frame
     return frame
+
+def calculate_camera_parameters(frame, frame_number = 1, debug = False):
+    """Calculate camera intrinsic and extrinsic parameters."""
+
+    # Get K matrix (intrinsic parameters)
+    K = np.loadtxt(f"resources/datos/K.txt")
+    # print(K)
+
+    # Get source and destination points
+    src_points, dst_points = get_src_and_dst_points(frame, frame_number, debug)
+
+    # Compute the homography
+    H = get_homography(src_points, dst_points)
+
+    # Get extrinsic parameters
+    R, t = get_extrinsic_parameters(K, H)
+
+    print("Rotation Matrices:")
+    for i, R_i in enumerate(R):
+        print(f"R_{i+1}:\n{R_i}\n")
+
+    print("Translation Vectors:")
+    for i, t_i in enumerate(t):
+        print(f"t_{i+1}:\n{t_i}\n")
 
 def main():
     DEBUG_FRAME = False
     GET_ONE_FRAME = True
     FRAME_INDEX = 157
+    DRAW_SQUARES = False
 
     if GET_ONE_FRAME:
         frame = cv2.imread(f"resources/datos/imagenes/img_{FRAME_INDEX:03d}.jpg")
-        processed_frame = process_frame(frame, FRAME_INDEX, DEBUG_FRAME)
 
-        cv2.imshow("Processed Frame", processed_frame)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        if DRAW_SQUARES:
+            processed_frame = process_frame(frame, FRAME_INDEX, DEBUG_FRAME)
+
+            cv2.imshow("Processed Frame", processed_frame)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
+        else:
+            calculate_camera_parameters(frame, FRAME_INDEX, DEBUG_FRAME)
     else:
         frames = [cv2.imread(f"resources/datos/imagenes/img_{i:03d}.jpg") for i in range(1, 736)]
         processed_frames = [process_frame(frame, index + 1, DEBUG_FRAME) for index, frame in enumerate(frames)]
@@ -141,5 +175,4 @@ def main():
             out_mp4.write(frame)
         out_mp4.release()
 
-if __name__ == "__main__":
-    main()
+if __name__ == "__main__": main()
