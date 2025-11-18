@@ -19,19 +19,26 @@ Este repositorio contiene recursos y materiales relacionados con la geometría p
    ```
 2. Navega a la carpeta del repositorio:
    ```
-    cd geometria-proyectiva
-    ```
-3. Explora las carpetas para encontrar notas, ejercicios y ejemplos.
-4. Siéntete libre de contribuir con nuevos materiales o mejoras mediante pull requests.
+   cd geometria-proyectiva
+   ```
+3. Ejecuta los archivos Python según sea necesario para explorar los conceptos de geometría proyectiva.
+   ```
+   python main.py
+   ```
+   ```
+   python laboratorio-2.py
+   ```
+   ```
+   python laboratorio_final_parte_1.py
+   ```
 
-## Contribuciones
-Las contribuciones son bienvenidas. Si deseas agregar contenido o mejorar el existente, por favor sigue estos pasos:
+## Requisitos
 
-1. Haz un fork del repositorio.
-2. Crea una nueva rama para tus cambios:
-3. Realiza tus modificaciones y haz commit de los cambios.
-4. Envía un pull request describiendo tus cambios.
-5. Espera la revisión y aprobación de tus cambios.
+Asegúrate de tener Python instalado en tu sistema. Puedes descargarlo desde [python.org](https://www.python.org/).
+También es posible que necesites instalar algunas bibliotecas adicionales. Puedes hacerlo usando pip:
+```
+pip install -r requirements.txt
+```
 
 ## Autor
 - Nombre: Oscar Viudez
