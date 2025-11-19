@@ -6,8 +6,8 @@ Este repositorio contiene recursos y materiales relacionados con la geometría p
 
 - `resources/`: Carpeta que contiene todos los archivos necesarios para la realización del laboratorio final de la asignatura.
 - `resultados/`: Carpeta con los resultados del laboratorio final de la asignatura.
+- `geometria_proyectiva/`: Paquete Python que contiene módulos y funciones hechas para el desarrollo de los laboratorios de la asignatura.
 - `laboratorio-2.py`: Archivo Python utilizado en el laboratorio 2 de la asignatura.
-- `main.py`: Archivo Python principal que contiene la lógica del proyecto.
 - `laboratorio_final_parte_1.py`: Archivo Python utilizado en el laboratorio final de la asignatura.
 - `README.md`: Este archivo, que proporciona una visión general del repositorio.
 
@@ -15,16 +15,13 @@ Este repositorio contiene recursos y materiales relacionados con la geometría p
 
 1. Clona el repositorio a tu máquina local usando el comando:
    ```
-   git clone
+   git clone https://github.com/0SC4R24/GeometriaProyectiva.git geometria-proyectiva
    ```
 2. Navega a la carpeta del repositorio:
    ```
    cd geometria-proyectiva
    ```
 3. Ejecuta los archivos Python según sea necesario para explorar los conceptos de geometría proyectiva.
-   ```
-   python main.py
-   ```
    ```
    python laboratorio-2.py
    ```
