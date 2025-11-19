@@ -1,5 +1,31 @@
-﻿import cv2
+﻿# Author: Oscar Viudez Cuevas
+# Description: Script utilizado para la realización de la parte de geometría proyectiva del laboratorio final.
+
+import cv2
 import numpy as np
+
+def get_frame(path):
+    """
+    Read an image from the given path.
+    Args:
+        path (str): Path to the image file.
+    Returns:
+        np.ndarray: Loaded image.
+    """
+
+    return cv2.imread(path)
+
+def save_frame(path, frame):
+    """
+    Save an image to the given path.
+    Args:
+        path (str): Path to save the image file.
+        frame (np.ndarray): Image to save.
+    Returns:
+        bool: True if the image was saved successfully, False otherwise.
+    """
+
+    return cv2.imwrite(path, frame)
 
 def singular_value_decomposition(A):
     """
@@ -150,13 +176,14 @@ def get_extrinsic_parameters(K, H):
     # Inverse of intrinsic matrix
     K_inv = np.linalg.inv(K)
 
-    h1 = H[:, 0]
-    h2 = H[:, 1]
-    h3 = H[:, 2]
+    h1 = H[:, 0] # First column of H
+    h2 = H[:, 1] # Second column of H
+    h3 = H[:, 2] # Third column of H
 
     # Scale factor λ
     lambda_ = 1.0 / np.linalg.norm(K_inv @ h1)
 
+    # Compute r1, r2, and t
     r1 = lambda_ * (K_inv @ h1)
     r2 = lambda_ * (K_inv @ h2)
     t = lambda_ * (K_inv @ h3)
@@ -168,7 +195,7 @@ def get_extrinsic_parameters(K, H):
     R = np.column_stack((r1, r2, r3))
 
     # Enforce valid rotation matrix using SVD
-    U, _, Vt = np.linalg.svd(R)
+    U, _, Vt = singular_value_decomposition(R)
     R = U @ Vt
 
     # Ensure t is 3×1
@@ -267,17 +294,18 @@ def process_frame(frame, frame_number = 1, debug = False):
     # Return the processed frame
     return frame
 
-def get_projection_matrix(frame, frame_number = 1, debug = False):
+def get_projection_matrix(frame, k_path = "../resources/datos/K.txt", frame_number = 1, debug = False):
     """
     Calculate projection matrix using intrinsic and extrinsic parameters.
     Args:
         frame (np.ndarray): The image frame to process.
+        k_path (str): Path to the intrinsic camera matrix K file.
         frame_number (int): Frame number for debugging purposes.
         debug (bool): Whether to draw detected corners on the frame.
     """
 
-    # Get K matrix (intrinsic parameters)
-    K = np.loadtxt(f"../resources/datos/K.txt")
+    # Load intrinsic camera matrix K
+    K = np.loadtxt(k_path)
 
     # Create parameters for chessboard detection
     pattern_size = (9, 6)  # Number of inner corners per chessboard column and row
@@ -288,12 +316,10 @@ def get_projection_matrix(frame, frame_number = 1, debug = False):
 
     # If pattern not found, return
     if not pattern_found:
-        print(f"Frame {frame_number:03d} - Chessboard pattern not found.")
         return None
 
     # Compute the homography
     H = get_homography(src_points, dst_points)
-    # print(get_homography(*get_src_and_dst_points(frame)[0:2]))
 
     # Get extrinsic parameters
     R, t = get_extrinsic_parameters(K, H)
