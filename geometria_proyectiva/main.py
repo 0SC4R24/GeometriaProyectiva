@@ -10,8 +10,7 @@ def singular_value_decomposition(A):
         (np.ndarray, np.ndarray, np.ndarray): U, S, Vt matrices from SVD.
     """
 
-    U, S, Vt = np.linalg.svd(A)
-    return U, S, Vt
+    return np.linalg.svd(A)
 
 def get_homography(src_points, dst_points):
     """
@@ -145,7 +144,7 @@ def get_extrinsic_parameters(K, H):
         K (np.ndarray): Intrinsic camera matrix.
         H (np.ndarray): Homography matrix.
     Returns:
-        (list, list): Lists of rotation matrices and translation vectors.
+        (np.ndarray, np.ndarray): Rotation matrix R and translation vector t.
     """
 
     # Inverse of intrinsic matrix
