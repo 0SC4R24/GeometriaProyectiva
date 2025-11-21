@@ -173,6 +173,8 @@ def get_extrinsic_parameters(K, H):
         (np.ndarray, np.ndarray): Rotation matrix R and translation vector t.
     """
 
+    # TODO: Refactorizar usando la matriz M de las diapositivas de clase
+
     # Inverse of intrinsic matrix
     K_inv = np.linalg.inv(K)
 

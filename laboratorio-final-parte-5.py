@@ -11,6 +11,7 @@ def primer_punto():
 
 def main():
     print("Laboratorio Final - Parte 5: Geometría Proyectiva")
+
     primer_punto()
 
 if __name__ == "__main__": main()
