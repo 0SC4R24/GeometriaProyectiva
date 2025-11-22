@@ -1,42 +1,29 @@
-﻿# Repositorio de Geometria Proyectiva
+﻿# Laboratorio Final de Geometría Proyectiva
 
-Este repositorio contiene recursos y materiales relacionados con la geometría proyectiva, incluyendo notas de clase, ejercicios y ejemplos prácticos.
+TODO: Crear titulo
 
-## Contenido
+## 📖 Descripción
 
-- `resources/`: Carpeta que contiene todos los archivos necesarios para la realización del laboratorio final de la asignatura.
-- `resultados/`: Carpeta con los resultados del laboratorio final de la asignatura.
-- `geometria_proyectiva/`: Paquete Python que contiene módulos y funciones hechas para el desarrollo de los laboratorios de la asignatura.
-- `laboratorio-2.py`: Archivo Python utilizado en el laboratorio 2 de la asignatura.
-- `laboratorio_final_parte_1.py`: Archivo Python utilizado en el laboratorio final de la asignatura.
-- `README.md`: Este archivo, que proporciona una visión general del repositorio.
+TODO: Crear descripción
 
-## Cómo usar este repositorio
+## 📂 Estructura del Repositorio
 
-1. Clona el repositorio a tu máquina local usando el comando:
-   ```
-   git clone https://github.com/0SC4R24/GeometriaProyectiva.git geometria-proyectiva
-   ```
-2. Navega a la carpeta del repositorio:
-   ```
-   cd geometria-proyectiva
-   ```
-3. Ejecuta los archivos Python según sea necesario para explorar los conceptos de geometría proyectiva.
-   ```
-   python laboratorio-2.py
-   ```
-   ```
-   python laboratorio_final_parte_1.py
-   ```
+TODO: Crear estructura
 
-## Requisitos
+## ▶️ Cómo usar este repositorio
+
+TODO: Crear uso de este repositorio
+
+## 🚀 Requisitos
 
 Asegúrate de tener Python instalado en tu sistema. Puedes descargarlo desde [python.org](https://www.python.org/).
 También es posible que necesites instalar algunas bibliotecas adicionales. Puedes hacerlo usando pip:
-```
+
+```bash
 pip install -r requirements.txt
 ```
 
-## Autor
+## 🧑‍💻 Autor
+
 - Nombre: Oscar Viudez
 - Email: [oscarviudez24@gmail.com](mailto:oscarviudez24@gmail.com)
