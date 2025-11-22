@@ -52,7 +52,7 @@ GeometriaProyectiva/
 1. Clona este repositorio en tu máquina local:
 
 ```bash
-git clone https://github.com/0SC4R24/GeometriaProyectiva.git
+git clone https://github.com/0SC4R24/GeometriaProyectiva.git GeometriaProyectiva
 ```
 
 2. Navega al directorio del proyecto:
