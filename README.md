@@ -18,9 +18,9 @@ $P = K[R, t]$ donde:
 - $R$ es la matriz de rotación que representa la orientación de la cámara.
 - $t$ es el vector de traslación que representa la posición de la cámara en el espacio 3D.
 
-$pixel = P \cdot world\_point$ donde:
+$pixel = P \cdot world point$ donde:
 - $pixel$ es la coordenada del píxel en la imagen 2D.
-- $world\_point$ es la coordenada del punto en el espacio 3D.
+- $world point$ es la coordenada del punto en el espacio 3D.
 
 ## 📂 Estructura del Repositorio
 
