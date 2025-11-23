@@ -1,9 +1,6 @@
 ﻿# Author: Oscar Viudez Cuevas
 
 import os
-
-import numpy as np
-
 from geometria_proyectiva import *
 
 # Dada la componente intrínseca o matriz de calibración de la cámara K, definida en el fichero datos\K.txt y la

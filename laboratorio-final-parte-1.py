@@ -1,5 +1,4 @@
 ﻿# Author: Oscar Viudez Cuevas
-import numpy as np
 
 from geometria_proyectiva import *
 
