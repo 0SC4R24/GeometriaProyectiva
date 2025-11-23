@@ -173,35 +173,36 @@ def get_extrinsic_parameters(K, H):
         (np.ndarray, np.ndarray): Rotation matrix R and translation vector t.
     """
 
-    # TODO: Refactorizar usando la matriz M de las diapositivas de clase
-
     # Inverse of intrinsic matrix
     K_inv = np.linalg.inv(K)
 
-    h1 = H[:, 0] # First column of H
-    h2 = H[:, 1] # Second column of H
-    h3 = H[:, 2] # Third column of H
+    # Compute matrix M
+    M = K_inv @ H
 
-    # Scale factor λ
-    lambda_ = 1.0 / np.linalg.norm(K_inv @ h1)
+    # Compute M's column vectors
+    M_ = M[:, :2]
 
-    # Compute r1, r2, and t
-    r1 = lambda_ * (K_inv @ h1)
-    r2 = lambda_ * (K_inv @ h2)
-    t = lambda_ * (K_inv @ h3)
+    # Compute scale factor
+    scale = 1 / np.linalg.norm(M_[:, 0])
 
-    # Compute orthonormal r3
+    # Compute rotation vectors
+    r1 = scale * M_[:, 0]
+    r2 = scale * M_[:, 1]
     r3 = np.cross(r1, r2)
 
-    # Stack into 3×3 matrix
+    # Form rotation matrix
     R = np.column_stack((r1, r2, r3))
 
     # Enforce valid rotation matrix using SVD
     U, _, Vt = singular_value_decomposition(R)
     R = U @ Vt
 
-    # Ensure t is 3×1
-    t = t.reshape(3, 1)
+    # Ensure R is a proper rotation matrix
+    if np.isclose(np.linalg.det(R), -1):
+        R = -R
+
+    # Compute translation vector
+    t = scale * M[:, 2].reshape(3, 1)
 
     # Return rotation matrix and translation vector
     return R, t
