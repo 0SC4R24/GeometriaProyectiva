@@ -11,25 +11,24 @@ def primer_punto(K, H):
     # en la esquina inferior interna izquierda del tablero (ver Figura 4). Comprobar si la matriz de rotación obtenida
     # R es una verdadera matriz de rotación.
 
-    # Utilizar la función get_extrinsic_parameters definida en geometria_proyectiva.py
-    # get_extrinsic_parameters ya realiza la comprobación de sí R es una verdadera matriz de rotación
-    return get_extrinsic_parameters(K, H)
+    # Utilizar la función get_extrinsic_parameters_without_check definida en geometria_proyectiva.py
+    return get_extrinsic_parameters_without_check(K, H)
 
 def segundo_punto(R, t):
     # (2) Si la matriz de rotación obtenida R en el apartado (1) no es una verdadera matriz de rotación, calcular de
     # nuevo los parámetros extrínsecos de la cámara R y t utilizando un metodo que asegure que es una verdadera
     # matriz de rotación.
 
-    # Utilizar la función singular_value_decomposition definida en geometria_proyectiva.py
+    # Make valid rotation matrix using SVD
     U, _, Vt = singular_value_decomposition(R)
-    R_corrected = U @ Vt
+    R = U @ Vt
 
-    # Asegurarse de que R_corrected es una verdadera matriz de rotación
-    if np.linalg.det(R_corrected) < 0:
-        R_corrected = -R_corrected
+    # Ensure R is a proper rotation matrix
+    if np.isclose(np.linalg.det(R), -1):
+        R = -R
 
     # Devolver la matriz de rotación corregida y el vector de traslación original
-    return R_corrected, t
+    return R, t
 
 def tercer_punto(frame, K, R, t):
     # (3) Utilizar la función drawFrameAxes de OpenCV y los resultados del apartado (2) para dibujar los ejes en

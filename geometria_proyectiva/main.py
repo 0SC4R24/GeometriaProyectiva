@@ -163,6 +163,42 @@ def draw_cube_on_frame(frame, cube_points, projection_matrix, color=(0, 255, 0))
     for i in range(4):
         cv2.line(frame, pixel_points[i], pixel_points[i + 4], color, 3)
 
+def get_extrinsic_parameters_without_check(K, H):
+    """
+    Calculate extrinsic parameters (rotation and translation) from intrinsic matrix K and homography H without checking rotation matrix validity.
+    Args:
+        K (np.ndarray): Intrinsic camera matrix.
+        H (np.ndarray): Homography matrix.
+    Returns:
+        (np.ndarray, np.ndarray): Rotation matrix R and translation vector t.
+    """
+
+    # Inverse of intrinsic matrix
+    K_inv = np.linalg.inv(K)
+
+    # Compute matrix M
+    M = K_inv @ H
+
+    # Compute M's column vectors
+    M_ = M[:, :2]
+
+    # Compute scale factor
+    scale = 1 / np.linalg.norm(M_[:, 0])
+
+    # Compute rotation vectors
+    r1 = scale * M_[:, 0]
+    r2 = scale * M_[:, 1]
+    r3 = np.cross(r1, r2)
+
+    # Form rotation matrix
+    R = np.column_stack((r1, r2, r3))
+
+    # Compute translation vector
+    t = scale * M[:, 2].reshape(3, 1)
+
+    # Return rotation matrix and translation vector
+    return R, t
+
 def get_extrinsic_parameters(K, H):
     """
     Calculate extrinsic parameters (rotation and translation) from intrinsic matrix K and homography H.
