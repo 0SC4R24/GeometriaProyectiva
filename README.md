@@ -89,3 +89,7 @@ pip install -r requirements.txt
 
 - Nombre: Oscar Viudez
 - Email: [oscarviudez24@gmail.com](mailto:oscarviudez24@gmail.com)
+
+## 🎥 Video Example
+
+https://github.com/user-attachments/assets/a0352f1c-1331-44bb-a296-b47c07110ab4
