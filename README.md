@@ -92,4 +92,4 @@ pip install -r requirements.txt
 
 ## 🎥 Video Example
 
-https://github.com/user-attachments/assets/a0352f1c-1331-44bb-a296-b47c07110ab4
+https://github.com/user-attachments/assets/4027d25c-7a66-4dfb-86c0-be78b8b31d47
